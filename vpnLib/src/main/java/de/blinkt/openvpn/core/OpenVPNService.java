@@ -835,7 +835,6 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
         }
 
-
         for (String dns : mDnslist) {
             try {
                 builder.addDnsServer(dns);
@@ -901,7 +900,6 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             }
         }
 
-
         if (mDomain != null)
             builder.addSearchDomain(mDomain);
 
@@ -944,6 +942,12 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             builder.setUnderlyingNetworks(null);
         }
 
+        //! Enable kill switch
+        builder.setBlocking(true);
+        // if (isKillSwitchEnabled()) {
+        //     builder.setBlocking(true);
+        //     setAllowedApplications(builder);
+        // }
 
         String session = mProfile.mName;
         if (mLocalIP != null && mLocalIPv6 != null)
@@ -995,8 +999,21 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             /* We cannot determine this, return false */
             return false;
         }
-
     }
+
+    // private boolean isKillSwitchEnabled() {
+    //     // Implement logic to check if the kill switch is enabled
+    //     // This could be a setting in the profile or a global setting
+    //     return mProfile.isKillSwitchEnabled();
+    // }
+
+    // private void setAllowedApplications(Builder builder) {
+    //     // Add allowed applications to the VPN builder
+    //     for (String packageName : mProfile.getAllowedApplications()) {
+    //         builder.addAllowedApplication(packageName);
+    //     }
+    // }
+    
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void allowAllAFFamilies(Builder builder) {
