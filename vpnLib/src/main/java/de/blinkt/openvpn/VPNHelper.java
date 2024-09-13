@@ -81,6 +81,7 @@ public class VPNHelper extends Activity {
         VPNHelper.isKillSwitchEnabled = isKillSwitchEnabled;
         VPNHelper.leaveKillSwitchEnabledOnDisconnect = false;
 
+
         if (profileIntent != null) {
             activity.startActivityForResult(VPNHelper.profileIntent, 1);
         }else{
