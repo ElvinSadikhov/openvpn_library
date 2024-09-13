@@ -322,6 +322,9 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
     // Similar to revoke but do not try to stop process
     public void openvpnStopped() {
+        if (!VPNHelper.leaveKillSwitchEnabledOnDisconnect) {
+            removeKillSwitch();
+        }
         endVpnService();
     }
 
@@ -605,8 +608,10 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             } catch (RemoteException e) {
                 VpnStatus.logException(e);
             }
-            // Remove kill switch when the user disconnects
-            removeKillSwitch();
+            if (!VPNHelper.leaveKillSwitchEnabledOnDisconnect) {
+                // Remove kill switch when the user disconnects
+                removeKillSwitch();
+            }
             return START_NOT_STICKY;
         }
 

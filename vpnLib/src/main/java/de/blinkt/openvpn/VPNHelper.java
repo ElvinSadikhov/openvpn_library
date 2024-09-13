@@ -24,6 +24,7 @@ import de.blinkt.openvpn.core.VpnStatus;
 public class VPNHelper extends Activity {
 
     public static boolean isKillSwitchEnabled = false;
+    public static boolean leaveKillSwitchEnabledOnDisconnect = false;
 
     public void applyKillSwitch() {
         Intent intent = new Intent(activity, OpenVPNService.class);
@@ -77,7 +78,8 @@ public class VPNHelper extends Activity {
         VPNHelper.password = password;
         VPNHelper.name = name;
         VPNHelper.bypassPackages = bypass;
-        VPNHelper.isKillSwitchEnabled = isKillSwitchEnabled; // Store the value
+        VPNHelper.isKillSwitchEnabled = isKillSwitchEnabled;
+        VPNHelper.leaveKillSwitchEnabledOnDisconnect = false;
 
         if (profileIntent != null) {
             activity.startActivityForResult(VPNHelper.profileIntent, 1);
@@ -94,7 +96,8 @@ public class VPNHelper extends Activity {
         startVPN();
     }
 
-    public void stopVPN() {
+    public void stopVPN(boolean applyKillSwitch) {
+        leaveKillSwitchEnabledOnDisconnect = applyKillSwitch;
         OpenVPNThread.stop();
         try {
             Intent intent = new Intent(activity, OpenVPNService.class);
