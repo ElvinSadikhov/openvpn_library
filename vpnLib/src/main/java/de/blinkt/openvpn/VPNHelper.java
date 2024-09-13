@@ -70,7 +70,6 @@ public class VPNHelper extends Activity {
         if (!vpnStart) connect();
     }
 
-
     public void startVPN(String config, String username, String password, String name, List<String> bypass, boolean isKillSwitchEnabled) {
         VPNHelper.config = config;
         VPNHelper.profileIntent = VpnService.prepare(activity);
