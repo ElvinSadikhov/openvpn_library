@@ -22,6 +22,21 @@ import de.blinkt.openvpn.core.OpenVPNThread;
 import de.blinkt.openvpn.core.VpnStatus;
 
 public class VPNHelper extends Activity {
+
+    public static boolean isKillSwitchEnabled = false;
+
+    public void applyKillSwitch() {
+        Intent intent = new Intent(activity, OpenVPNService.class);
+        intent.setAction(OpenVPNService.ACTION_APPLY_KILL_SWITCH);
+        activity.startService(intent);
+    }
+
+    public void removeKillSwitch() {
+        Intent intent = new Intent(activity, OpenVPNService.class);
+        intent.setAction(OpenVPNService.ACTION_REMOVE_KILL_SWITCH);
+        activity.startService(intent);
+    }
+
     public Activity activity;
     public static OnVPNStatusChangeListener listener;
     private static String config;
@@ -55,13 +70,14 @@ public class VPNHelper extends Activity {
     }
 
 
-    public void startVPN(String config, String username, String password, String name, List<String> bypass) {
+    public void startVPN(String config, String username, String password, String name, List<String> bypass, boolean isKillSwitchEnabled) {
         VPNHelper.config = config;
         VPNHelper.profileIntent = VpnService.prepare(activity);
         VPNHelper.username = username;
         VPNHelper.password = password;
         VPNHelper.name = name;
         VPNHelper.bypassPackages = bypass;
+        VPNHelper.isKillSwitchEnabled = isKillSwitchEnabled; // Store the value
 
         if (profileIntent != null) {
             activity.startActivityForResult(VPNHelper.profileIntent, 1);
@@ -80,11 +96,16 @@ public class VPNHelper extends Activity {
 
     public void stopVPN() {
         OpenVPNThread.stop();
+        try {
+            Intent intent = new Intent(activity, OpenVPNService.class);
+            intent.setAction(OpenVPNService.DISCONNECT_VPN);
+            activity.startService(intent);
+        } catch (Exception e) { }
     }
 
     private void connect() {
         try {
-            OpenVpnApi.startVpn(activity, config,name, username, password, bypassPackages);
+            OpenVpnApi.startVpn(activity, config, name, username, password, bypassPackages, isKillSwitchEnabled);
             vpnStart = true;
         } catch (RemoteException e) {
             e.printStackTrace();

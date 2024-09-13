@@ -63,6 +63,7 @@ import java.util.Vector;
 import de.blinkt.openvpn.DisconnectVPNActivity;
 import de.blinkt.openvpn.LaunchVPN;
 import de.blinkt.openvpn.R;
+import de.blinkt.openvpn.VPNHelper;
 import de.blinkt.openvpn.VpnProfile;
 import de.blinkt.openvpn.api.ExternalAppDatabase;
 import de.blinkt.openvpn.core.VpnStatus.ByteCountListener;
@@ -74,6 +75,63 @@ import static de.blinkt.openvpn.core.ConnectionStatus.LEVEL_WAITING_FOR_USER_INP
 import static de.blinkt.openvpn.core.NetworkSpace.IpAddress;
 
 public class OpenVPNService extends VpnService implements StateListener, Callback, ByteCountListener, IOpenVPNServiceInternal {
+    // Add these constants at the top of the class
+    public static final String ACTION_APPLY_KILL_SWITCH = "ACTION_APPLY_KILL_SWITCH";
+    public static final String ACTION_REMOVE_KILL_SWITCH = "ACTION_REMOVE_KILL_SWITCH";
+
+//    private boolean isKillSwitchEnabled = false;
+    private ParcelFileDescriptor mKillSwitchInterface;
+
+//    public void enableKillSwitch() {
+//        isKillSwitchEnabled = true;
+//        VpnStatus.logInfo("Kill switch enabled");
+//        // Apply kill switch immediately if VPN is not connected
+////        if (mManagement == null || !mManagement.isConnected()) {
+////            applyKillSwitch();
+////        }
+//    }
+//
+//    public void disableKillSwitch() {
+//        isKillSwitchEnabled = false;
+//        VpnStatus.logInfo("Kill switch disabled");
+//        removeKillSwitch();
+//    }
+
+    private void applyKillSwitch() {
+//        if (!mProfile.isKillSwitchEnabled) {
+        if (!VPNHelper.isKillSwitchEnabled) {
+            return;
+        }
+        if (mKillSwitchInterface != null) {
+            // Kill switch is already active
+            return;
+        }
+        try {
+            Builder builder = new Builder();
+            builder.addDisallowedApplication(getPackageName());
+            builder.addAddress("10.0.0.2", 32); // Dummy IP address
+            builder.addRoute("0.0.0.0", 0);
+            builder.setSession("Kill Switch");
+            mKillSwitchInterface = builder.establish();
+            VpnStatus.logInfo("Kill switch applied");
+        } catch (Exception e) {
+            VpnStatus.logException("Failed to apply kill switch", e);
+        }
+    }
+
+    private void removeKillSwitch() {
+        if (mKillSwitchInterface != null) {
+            try {
+                mKillSwitchInterface.close();
+                VpnStatus.logInfo("Kill switch removed");
+            } catch (IOException e) {
+                VpnStatus.logException("Failed to remove kill switch", e);
+            }
+            mKillSwitchInterface = null;
+        }
+    }
+
+
 
     private String byteIn, byteOut;
     private String duration;
@@ -547,6 +605,8 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             } catch (RemoteException e) {
                 VpnStatus.logException(e);
             }
+            // Remove kill switch when the user disconnects
+            removeKillSwitch();
             return START_NOT_STICKY;
         }
 
@@ -562,6 +622,16 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             return START_NOT_STICKY;
         }
 
+        // **Add the kill switch action handlers here**
+        if (intent != null && ACTION_APPLY_KILL_SWITCH.equals(intent.getAction())) {
+            applyKillSwitch();
+            return START_NOT_STICKY;
+        }
+
+        if (intent != null && ACTION_REMOVE_KILL_SWITCH.equals(intent.getAction())) {
+            removeKillSwitch();
+            return START_NOT_STICKY;
+        }
 
         if (intent != null && START_SERVICE.equals(intent.getAction()))
             return START_NOT_STICKY;
@@ -1267,6 +1337,27 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             showNotification(VpnStatus.getLastCleanLogMessage(this),
                     VpnStatus.getLastCleanLogMessage(this), channel, 0, level, intent);
 
+        }
+
+        // Add this code at the end of the method
+        if (VPNHelper.isKillSwitchEnabled) {
+            switch (level) {
+                case LEVEL_NOTCONNECTED:
+                case LEVEL_NONETWORK:
+                case LEVEL_AUTH_FAILED:
+                    // Apply kill switch when VPN disconnects unexpectedly
+                    applyKillSwitch();
+                    break;
+
+                case LEVEL_CONNECTED:
+                    // Remove kill switch when VPN is connected
+                    removeKillSwitch();
+                    break;
+
+                default:
+                    // Do nothing for other states
+                    break;
+            }
         }
     }
 

@@ -15,7 +15,9 @@
         <service
             android:name=".core.OpenVPNService"
             android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE" >
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:stopWithTask="false" >
+<!--            android:foregroundServiceType="vpn"-->
             <intent-filter>
                 <action android:name="android.net.VpnService" />
             </intent-filter>

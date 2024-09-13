@@ -49,6 +49,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 public class VpnProfile implements Serializable, Cloneable {
+
+    public boolean isKillSwitchEnabled = false;
+
     // Note that this class cannot be moved to core where it belongs since
     // the profile loading depends on it being here
     // The Serializable documentation mentions that class name change are possible
