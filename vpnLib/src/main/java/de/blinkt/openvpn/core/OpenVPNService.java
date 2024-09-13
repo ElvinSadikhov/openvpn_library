@@ -98,10 +98,6 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 //    }
 
     private void applyKillSwitch() {
-//        if (!mProfile.isKillSwitchEnabled) {
-        if (!VPNHelper.isKillSwitchEnabled) {
-            return;
-        }
         if (mKillSwitchInterface != null) {
             // Kill switch is already active
             return;
@@ -605,12 +601,12 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
         if (intent != null && DISCONNECT_VPN.equals(intent.getAction())) {
             try {
                 stopVPN(false);
+                if (!VPNHelper.leaveKillSwitchEnabledOnDisconnect) {
+                    // Remove kill switch when the user disconnects
+                    removeKillSwitch();
+                }
             } catch (RemoteException e) {
                 VpnStatus.logException(e);
-            }
-            if (!VPNHelper.leaveKillSwitchEnabledOnDisconnect) {
-                // Remove kill switch when the user disconnects
-                removeKillSwitch();
             }
             return START_NOT_STICKY;
         }

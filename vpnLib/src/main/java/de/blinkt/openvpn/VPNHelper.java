@@ -97,9 +97,8 @@ public class VPNHelper extends Activity {
         startVPN();
     }
 
-    public void stopVPN(boolean applyKillSwitch) {
-        leaveKillSwitchEnabledOnDisconnect = applyKillSwitch;
-        applyKillSwitch();
+    public void stopVPN(boolean removeKillSwitchToo) {
+        leaveKillSwitchEnabledOnDisconnect = !removeKillSwitchToo;
         OpenVPNThread.stop();
         try {
             Intent intent = new Intent(activity, OpenVPNService.class);
