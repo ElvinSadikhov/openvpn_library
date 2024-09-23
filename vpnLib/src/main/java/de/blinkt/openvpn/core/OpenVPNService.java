@@ -74,6 +74,29 @@ import static de.blinkt.openvpn.core.ConnectionStatus.LEVEL_WAITING_FOR_USER_INP
 import static de.blinkt.openvpn.core.NetworkSpace.IpAddress;
 
 public class OpenVPNService extends VpnService implements StateListener, Callback, ByteCountListener, IOpenVPNServiceInternal {
+    public static final String ACTION_GET_VPN_SETTINGS_STATUS = "de.blinkt.openvpn.GET_VPN_SETTINGS_STATUS";
+    public static final String ACTION_VPN_SETTINGS_STATUS_RESPONSE = "de.blinkt.openvpn.VPN_SETTINGS_STATUS_RESPONSE";
+
+    private void handleGetVpnStatus() {
+        Boolean isAlwaysOn = null;
+        Boolean isLockdownEnabled = null;
+
+       try {
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { // API 29
+               isAlwaysOn = this.isAlwaysOn();
+           }
+
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+               isLockdownEnabled = this.isLockdownEnabled();
+           }
+       } catch (Exception e) { }
+
+        Intent responseIntent = new Intent(ACTION_VPN_SETTINGS_STATUS_RESPONSE);
+        responseIntent.putExtra("isAlwaysOn", isAlwaysOn);
+        responseIntent.putExtra("isLockdownEnabled", isLockdownEnabled);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(responseIntent);
+    }
 
     private String byteIn, byteOut;
     private String duration;
@@ -540,6 +563,11 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
         VpnStatus.addByteCountListener(this);
 
         guiHandler = new Handler(getMainLooper());
+
+        if (intent != null && ACTION_GET_VPN_SETTINGS_STATUS.equals(intent.getAction())) {
+            handleGetVpnStatus();
+            return START_NOT_STICKY;
+        }
 
         if (intent != null && DISCONNECT_VPN.equals(intent.getAction())) {
             try {
