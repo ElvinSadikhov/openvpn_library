@@ -61,6 +61,7 @@ public class VPNHelper extends Activity {
     private static String password;
     private static String name;
     private static List<String> bypassPackages;
+    public static Boolean isNonGoogleDevice;
 
     public JSONObject status = new JSONObject();
 
@@ -85,13 +86,14 @@ public class VPNHelper extends Activity {
     }
 
 
-    public void startVPN(String config, String username, String password, String name, List<String> bypass) {
+    public void startVPN(String config, String username, String password, String name, List<String> bypass, Boolean isNonGoogleDevice) {
         VPNHelper.config = config;
         VPNHelper.profileIntent = VpnService.prepare(activity);
         VPNHelper.username = username;
         VPNHelper.password = password;
         VPNHelper.name = name;
         VPNHelper.bypassPackages = bypass;
+        VPNHelper.isNonGoogleDevice = isNonGoogleDevice;
 
         if (profileIntent != null) {
             activity.startActivityForResult(VPNHelper.profileIntent, 1);

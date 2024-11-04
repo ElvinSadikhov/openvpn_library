@@ -66,6 +66,7 @@ import java.util.Vector;
 import de.blinkt.openvpn.DisconnectVPNActivity;
 import de.blinkt.openvpn.LaunchVPN;
 import de.blinkt.openvpn.R;
+import de.blinkt.openvpn.VPNHelper;
 import de.blinkt.openvpn.VpnProfile;
 import de.blinkt.openvpn.api.ExternalAppDatabase;
 import de.blinkt.openvpn.core.VpnStatus.ByteCountListener;
@@ -389,9 +390,13 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
             mNotificationManager.notify(notificationId, notification);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE);
-                startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+            if (VPNHelper.isNonGoogleDevice) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    //                startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE);
+                    startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+                } else {
+                    startForeground(notificationId, notification);
+                }
             } else {
                 startForeground(notificationId, notification);
             }
