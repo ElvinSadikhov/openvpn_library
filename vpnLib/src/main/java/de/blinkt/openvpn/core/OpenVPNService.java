@@ -392,8 +392,8 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
             if (VPNHelper.isNonGoogleDevice) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-    //                startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE);
-                    startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+                    startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE);
+//                    startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
                 } else {
                     startForeground(notificationId, notification);
                 }
