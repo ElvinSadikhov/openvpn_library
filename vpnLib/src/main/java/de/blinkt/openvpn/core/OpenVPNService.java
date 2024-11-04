@@ -5,6 +5,8 @@
 
 package de.blinkt.openvpn.core;
 
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK;
+
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -20,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -335,7 +338,7 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        android.app.Notification.Builder nbuilder = new Notification.Builder(this);
+        Notification.Builder nbuilder = new Notification.Builder(this);
 
         int priority;
         if (channel.equals(NOTIFICATION_CHANNEL_BG_ID))
@@ -386,7 +389,12 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
 
             mNotificationManager.notify(notificationId, notification);
 
-            startForeground(notificationId, notification);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_NONE);
+                startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE);
+            } else {
+                startForeground(notificationId, notification);
+            }
 
             if (lastChannel != null && !channel.equals(lastChannel)) {
                 // Cancel old notification
